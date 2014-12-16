@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html ng-app="app">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title></title>
+
+    <!--<link href="css/preview-frame.css" rel="stylesheet">-->
+    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+
+    <!-- ionic/angularjs js -->
+    <script src="lib/ionic/js/ionic.bundle.js"></script>
+	<script src="app.js"></script>
+	<script src="lib/angular-webstorage/angular-webstorage.js"></script>
+	<script src="lib/angular-google-chart/ng-google-chart.js"></script>
+
+    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+
+  </head>
+  <body>
+ 	
+	<!-- the tap navigation -->
+    <ion-tabs class="tabs-positive tabs-icon-top">
+	
+        <ion-tab title="Overview" icon="ion-android-inbox" ui-sref="overview">
+			<ion-nav-view name="overview"></ion-nav-view>
+        </ion-tab>
+		
+        <ion-tab title="Create" icon="ion-android-add" ui-sref="create">
+			<ion-nav-view name="create"></ion-nav-view>
+        </ion-tab>
+		
+		<ion-tab title="Statistics" icon="ion-ios7-pie" ui-sref="statistics">
+			<ion-nav-view name="statistics"></ion-nav-view>
+        </ion-tab>
+		
+        <ion-tab title="Settings" icon="ion-android-settings" ui-sref="settings">
+			<ion-nav-view name="settings"></ion-nav-view>
+        </ion-tab>
+		
+    </ion-tabs>
+	
+	<!-- overview template -->
+	<script type="text/ng-template" ng-controller="OverviewCtrl" id="overview.html">
+		
+		<ion-nav-bar class="bar-positive">
+			<ion-nav-buttons ng-show="view.displayButtons" side="right">
+				<a style="color: white;" class="button button-icon icon ion-search" ng-click="showSearch()"></a> 
+				<a style="color: white;" class="button button-icon icon ion-android-share"></a> 
+				<a style="color: white;" class="button button-icon icon ion-play" ng-click="startActivity()"></a> 
+			</ion-nav-buttons>
+			<div id="search-box" ng-show="view.displaySearch" class="bar bar-header bar-positive item-input-inset" style="position: absolute">
+				<div class="item-input-wrapper">
+					<i class="icon ion-ios7-search placeholder-icon"></i>
+					<input type="search" placeholder="Search" ng-model="data.searchQuery">
+					<i class="clear-search icon ion-ios7-close-empty" ng-click="clearSearch()"></i>
+				</div>
+				<button class="button button-clear" ng-click="hideSearch()">
+					Cancel
+				</button>
+			</div>
+		</ion-nav-bar>
+		
+		<ion-view title="Overview" hide-nav-bar="false">
+			<ion-content padding="true">
+			
+				<div class="card" ng-repeat="it in overview | orderBy: 'starttime' : true | filter: data.searchQuery" ng-click="editActivity({{it.id}})">
+					<div class="item item-icon-right">
+						<h2>{{it.title}}</h2>
+						<a ng-if="it.endtime == undefined" ng-click="stopActivity(it.id)" class="button button-icon icon ion-stop"></a>
+					</div>
+					<div class="item">
+						<p>{{it.startdate | date:'yyyy-MM-dd'}}</p>
+						<p ng-if="it.endtime != undefined">{{it.timespan | date:'HH'}} hours {{it.timespan | date:'mm'}} minutes</p>
+						<p ng-if="it.category != undefined">{{it.category.name}}</p>
+					</div>
+					<div class="item">
+						<i class="icon ion-social-facebook"></i>
+						<i class="icon ion-social-googleplus"></i>
+					</div>
+				</div>
+			</ion-content>
+		</ion-view>
+	</script>
+	
+	<!-- create template -->
+	<script type="text/ng-template" id="create.html">
+		
+		<ion-nav-bar class="bar-positive">
+			<ion-nav-buttons side="right">
+				<a style="color: white;" ui-sref="overview" ng-click="createActivity()" class="button button-icon icon ion-android-checkmark"></a> 
+			</ion-nav-buttons>
+		</ion-nav-bar>
+	
+		<ion-view title="Create">
+		
+            <ion-content class="has-header">
+                <ion-list>
+                    <label class="item item-input" name="Title">
+                        <input type="text" placeholder="Title" ng-model="model.title">
+                    </label>
+                    <label class="item item-select" name="Category">
+                        <div class="input-label">
+							Category
+						</div>
+						<select ng-model="model.category" ng-options="category as category.name for category in categories">
+						</select>
+                    </label>
+                    <label class="item item-input" name="startdate">
+						<span class="input-label">Startdate</span>
+                        <input type="date" placeholder="Start date" ng-model="model.startdate">
+                    </label>
+					<label class="item item-input" name="starttime">
+						<span class="input-label">Starttime</span>
+                        <input type="time" placeholder="Start time" ng-model="model.starttime">
+                    </label>
+                    <label class="item item-input" name="enddate">
+						<span class="input-label">Enddate</span>
+                        <input type="date" placeholder="End date" ng-model="model.enddate">
+                    </label>
+					<label class="item item-input" name="endtime">
+						<span class="input-label">Endtime</span>
+                        <input type="time" placeholder="End time" ng-model="model.endtime">
+                    </label>
+					<ion-toggle ng-model="model.allday" toggle-class="toggle-positive">Allday</ion-toggle>
+					<!--<ion-checkbox class="item" name="gps" ng-model="allday">Allday</ion-checkbox>-->
+                    <label class="item item-input" name="place">
+                        <input type="text" placeholder="Place" ng-model="model.place">
+                    </label>
+					<ion-toggle ng-model="model.gps" toggle-class="toggle-positive">GPS</ion-toggle>
+                    <!--<ion-checkbox class="item" name="gps" ng-model="gps">GPS</ion-checkbox>-->
+                    <label class="item item-input" name="description">
+                        <textarea rows="8" placeholder="Description" ng-model="model.description"></textarea>
+                    </label>
+                </ion-list>
+            </ion-content>
+		</ion-view>
+	</script>
+	
+	<!-- statistics template -->
+	<script type="text/ng-template" id="statistics.html">
+	
+		<ion-nav-bar class="bar-positive">
+			<ion-nav-buttons side="right">
+			</ion-nav-buttons>
+		</ion-nav-bar>
+	
+		<ion-view title="Statistics">
+            <ion-content class="has-header">
+				<div class="card">
+					<div class="item">
+						PieChart
+					</div>
+					<div class="item">
+						<div google-chart chart="pieChartObject"></div>
+					</div>
+				</div>
+			</ion-content>
+		</ion-view>
+	</script>
+	
+	<!-- settings template -->
+	<script type="text/ng-template" id="settings.html">
+	
+		<ion-nav-bar class="bar-positive">
+			<ion-nav-buttons side="right">
+			</ion-nav-buttons>
+		</ion-nav-bar>
+	
+		<ion-view title="Settings">
+            <ion-content class="has-header">
+				<div class="list">
+					<div class="item item-divider">
+						General
+					</div>
+					
+					<a class="item" href="#">
+						Setting 1
+					</a>
+					
+					<div class="item item-divider">
+						Social Media
+					</div>
+					
+					<a class="item item-icon-left" href="#">
+						<i class="icon ion-social-facebook"></i>
+						Facebook
+					</a>
+					<a class="item item-icon-left" href="#">
+						<i class="icon ion-social-googleplus"></i>
+						Google+
+					</a>
+					<a class="item item-icon-left" href="#">
+						<i class="icon ion-social-twitter"></i>
+						Twitter
+					</a>
+					
+					<div class="item item-divider">
+						Dev
+					</div>
+					
+					<a class="item" href="#" ng-click="clearStorage()">
+						clear storage
+					</a>
+				</div>
+			</ion-content>
+		</ion-view>
+	</script>
+	
+  </body>
+</html>
